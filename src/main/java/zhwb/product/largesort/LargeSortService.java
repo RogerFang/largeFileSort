@@ -96,7 +96,6 @@ public class LargeSortService
                 result.createNewFile();
             }
             File temp = new File(originFile.getParentFile(), new StringBuilder("tempFile.").append(extension).toString());
-            extension = null;
             if (!temp.exists())
             {
                 temp.createNewFile();
@@ -244,12 +243,18 @@ public class LargeSortService
 
         File f = new File(outDir, fileName);
         BufferedWriter out = new BufferedWriter(new FileWriter(f));
+
         /*store header here*/
         header = in.readLine();
+        long initilLen = memoryLimit / header.length();
+        int i = 0;
         while ((line = in.readLine()) != null)
         {
-            if (f.length() >= memoryLimit)
+            /*every length/100 get a judge to see the file size, it will enhancement the speed */
+            if (i % (initilLen / 100) == 0 && f.length() >= memoryLimit)
+            //            if (i >= lineLen)
             {
+                i = 0;
                 fileName = fileName.replaceFirst("^\\d+", String.valueOf(++n));
                 out.flush();
                 out.close();
@@ -257,6 +262,7 @@ public class LargeSortService
                 f = new File(outDir, fileName);
                 out = new BufferedWriter(new FileWriter(f));
             }
+            i++;
             out.write(line);
             out.newLine();
             out.flush();

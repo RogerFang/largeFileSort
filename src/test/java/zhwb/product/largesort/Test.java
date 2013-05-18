@@ -6,28 +6,29 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
-import zhwb.product.largesort.bean.Person;
+import zhwb.product.largesort.util.StoreType;
+import zhwb.product.largesort.util.StoreType.StoreUnit;
 
 public class Test
 {
-    static Random rn = new Random();
-
     public static void main(final String[] args)
         throws IOException
     {
         /*test 500M data, in 50M Memory*/
 
-        //        generateData("C:\\LargeFileSort\\large_data.csv", 100000000);
+        generateData("C:\\LargeFileSort\\large_data.csv", StoreType.getInstance(StoreUnit.MB, 100).getRealSize());
 
-        new LargeSortService().sortLargeFile("C:\\LargeFileSort\\large_data.csv", 100000000 / 10, true);
+        new LargeSortService().sortLargeFile("C:\\LargeFileSort\\large_data.csv", StoreType.getInstance(StoreUnit.MB, 10)
+                .getRealSize(), false);
 
 
         //        new LargeSortService().sortLargeFile(null, 0);
     }
 
-    public static void generateData(final String filePath, final int memSize)
+    public static void generateData(final String filePath, final long memSize)
         throws IOException
     {
+        long start = System.currentTimeMillis();
         File file = new File(filePath);
         if (!file.exists())
         {
@@ -36,20 +37,22 @@ public class Test
         BufferedWriter out = new BufferedWriter(new FileWriter(file));
         String header = "#ID,NAME,AGE,GENDER,COUNTRY,PROVINCE,CITY,STREET";
         out.write(header);
-        while (file.length() < memSize)
+        Random random = new Random();
+
+        for (long i = 0; i < memSize; i = file.length())
         {
-            out.write(Person.valueOf(generateOneline()).toString());
-            out.newLine();
-            out.flush();
+            for (int j = 0; j < 20; j++)
+            {
+                out.write("1111,jack," + random.nextInt(150) + ",Male,US,NJ,Jersey City,Watchington Blv");
+                out.newLine();
+            }
+
         }
+        out.flush();
         out.close();
         out = null;
         System.out.println("file size:" + (double)(file.length() / 1024 / 1024) + "M");
+        System.out.println("generate time:" + (System.currentTimeMillis() - start));
     }
 
-    private static String generateOneline()
-    {
-        String s = "1111,jack," + rn.nextInt(150) + ",Male,US,NJ,Jersey City,Watchington Blv";
-        return s;
-    }
 }
